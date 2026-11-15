@@ -1,0 +1,77 @@
+.button {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  height: 34px;
+  padding: 0 12px;
+  border-radius: 18px;
+  border: 1px solid var(--dsw-alias-border-l2);
+  background-color: transparent;
+  color: var(--dsw-alias-label-primary);
+  font: inherit;
+  font-size: 13px;
+  line-height: 20px;
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
+  user-select: none;
+  transition:
+    background-color var(--ds-transition-duration) var(--ds-ease-in-out),
+    border-color var(--ds-transition-duration) var(--ds-ease-in-out);
+
+  &:hover:not(.listening):not(.speaking):not(.thinking):not(.interrupted):not(.error):not(
+      .disabled
+    ) {
+    background-color: var(--dsw-alias-interactive-bg-hover);
+    border-color: var(--dsw-alias-border-l3);
+  }
+
+  &:focus-visible {
+    box-shadow: 0 0 0 2px var(--dsw-alias-button-primary-fill);
+  }
+}
+
+.listening {
+  border-color: transparent;
+  background-color: var(--dsw-alias-brand-primary);
+  color: var(--dsw-alias-brand-primary-invert);
+}
+
+.speaking {
+  border-color: transparent;
+  background-color: var(--dsw-static-green-500);
+  color: var(--dsw-static-neutral-bluish-00);
+}
+
+.thinking {
+  border-color: transparent;
+  background-color: var(--dsw-static-amber-500);
+  color: var(--dsw-static-neutral-bluish-1000);
+}
+
+.interrupted {
+  border-color: transparent;
+  background-color: var(--dsw-static-neutral-bluish-700);
+  color: var(--dsw-static-neutral-bluish-00);
+}
+
+.error {
+  border-color: transparent;
+  background-color: var(--dsw-alias-state-error-primary);
+  color: var(--dsw-static-neutral-bluish-00);
+}
+
+.listening:hover,
+.speaking:hover,
+.thinking:hover,
+.interrupted:hover,
+.error:hover {
+  filter: brightness(0.94);
+}
+
+.disabled {
+  color: var(--dsw-alias-label-caption);
+  cursor: not-allowed;
+}

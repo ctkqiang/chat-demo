@@ -21,6 +21,8 @@ import { showToast } from '../components/base/toastState.js'
 import { onUploadNotice } from '../services/attachments.js'
 import { Button } from '../components/base/Button.js'
 import { stopReadAloud } from '../services/speech/readAloud.js'
+import { LiveVoiceView } from '../components/liveVoice/LiveVoiceView.js'
+import { stopLiveVoice } from '../services/liveVoice/conversation.js'
 import { CollapsedSider } from '../components/sider/CollapsedSider.js'
 import { closeMobileSider } from '../components/sider/mobileSiderState.js'
 import { MobileSider, Sider } from '../components/sider/Sider.js'
@@ -64,6 +66,7 @@ export const App = () => {
   useEffect(closeSearchPanel, [activeId])
   // 切换会话时停止朗读
   useEffect(stopReadAloud, [activeId])
+  useEffect(stopLiveVoice, [activeId])
   // 移动端选中会话、切换布局后收起抽屉
   useEffect(closeMobileSider, [activeId, isMobile])
 
@@ -133,6 +136,7 @@ export const App = () => {
         <SearchPanel />
       </div>
       <SettingsDialog />
+      <LiveVoiceView />
       <Toast />
     </>
   )

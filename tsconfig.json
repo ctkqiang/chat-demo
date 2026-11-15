@@ -6,6 +6,7 @@
     "moduleResolution": "NodeNext",
     "jsx": "react-jsx",
     "noEmit": true,
+    "allowImportingTsExtensions": true,
     "isolatedModules": true,
     "lib": ["DOM", "DOM.Iterable", "ESNext"],
     "types": ["node"],
