@@ -185,8 +185,7 @@ export const canContinueReply = (reply: AssistantMessage): boolean => {
     return false
   }
   return (
-    reply.status === 'stopped' ||
-    (reply.status === 'done' && reply.stopReason === 'max_tokens')
+    reply.status === 'stopped' || (reply.status === 'done' && reply.stopReason === 'max_tokens')
   )
 }
 
@@ -202,7 +201,7 @@ const isUsableReply = (message: Message): message is AssistantMessage =>
   getReplyText(message) !== ''
 
 /** 有文件时用内容块数组：先文件后文本，文件按 Files API 的 file_id 引用 */
-const toUserParam = ({ content, files }: UserMessage): MessageParam => {
+export const toUserParam = ({ content, files }: UserMessage): MessageParam => {
   const blocks = toFileBlocks(files)
   return blocks.length === 0
     ? { role: 'user', content }
@@ -220,7 +219,7 @@ const toUserParam = ({ content, files }: UserMessage): MessageParam => {
  * - 工具调用和结果只保留 kind 为 read_link 的块，其他历史工具块不回传；
  * - 阅读链接结果原样回传，保留 signature：服务端解密后将页面拼回该轮提问末尾；
  */
-const toAssistantParam = (
+export const toAssistantParam = (
   { blocks }: AssistantMessage,
   prefix = false,
   thinking = false

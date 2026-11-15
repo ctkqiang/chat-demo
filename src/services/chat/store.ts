@@ -15,6 +15,7 @@ import {
   prepareDraftMessage,
 } from './drafts.js'
 import { createLatestReminder } from './latestReminder.js'
+import type { LiveCallTurn } from '../liveVoice/types.js'
 import {
   applyEvent,
   canContinueReply,
@@ -33,20 +34,20 @@ import {
 } from './types.js'
 
 /** deepseek-flash 同时支持深度思考与图片输入 */
-const MODEL: ChatModel = 'deepseek-flash'
+export const MODEL: ChatModel = 'deepseek-flash'
 /** 所有生成请求统一携带的助手身份说明 */
-const SYSTEM_PROMPT = '该助手为DeepSeek，由深度求索公司创造。'
+export const SYSTEM_PROMPT = '该助手为DeepSeek，由深度求索公司创造。'
 /** 保留最近打开的详情；当前会话、生成中及尚未成功保存的会话不淘汰。 */
 const SESSION_CACHE_LIMIT = 5
 /** 安全审核固定开启，所有请求都走扩展模式 */
-const SAFETY_CHECK = { level: 'high' } as const
+export const SAFETY_CHECK = { level: 'high' } as const
 /** 服务端判定 file_id 失效后，重新补传并重发的最多次数（不含首次请求） */
 const FILE_RETRY_LIMIT = 2
 /** 退避基数，第 n 次重试等待 2^n 倍；连续失败达到上限就放弃，把原始报错展示出来 */
 const FILE_RETRY_BASE_DELAY = 1000
 
 /** 阅读链接始终开启，智能搜索开关控制是否另行声明搜索工具（含边想边搜）。 */
-const serverTools = (search: boolean): CreateMessageRequest['tools'] => {
+export const serverTools = (search: boolean): CreateMessageRequest['tools'] => {
   const tools: CreateMessageRequest['tools'] = [
     { type: 'deepseek_read_url', name: 'deepseek_read_url' },
   ]
@@ -747,6 +748,73 @@ export const retryUpload = (sessionId: string, messageId: string) => {
   updateReply(sessionId, reply)
   persist(sessionId)
   void streamReply(sessionId, reply, { history: path.slice(0, index - 1), question })
+}
+
+export const appendLiveCall = (targetSessionId: string | null, turns: LiveCallTurn[]): boolean => {
+  if (get().importingHistory || !get().ready) {
+    return false
+  }
+  const valid = turns.filter((turn) => turn.question.trim() && turn.answer.trim())
+  if (valid.length === 0) {
+    return false
+  }
+  let sessionId = targetSessionId
+  if (
+    sessionId !== null &&
+    (deletingSessions.has(sessionId) || getStreamController(sessionId) || !getSession(sessionId))
+  ) {
+    sessionId = null
+  }
+  const now = Date.now()
+  if (sessionId === null) {
+    const session: Session = {
+      id: createId(),
+      title: '',
+      createdAt: now,
+      updatedAt: now,
+      messages: [],
+      rootMessageId: null,
+    }
+    sessionId = session.id
+    touchSession(session.id)
+    set((state) => ({
+      sessions: [toSessionSummary(session), ...state.sessions],
+      sessionCache: { ...state.sessionCache, [session.id]: session },
+      activeId: session.id,
+    }))
+  }
+  const current = getSession(sessionId)
+  if (!current) {
+    return false
+  }
+  const messages: Message[] = valid.flatMap((turn): Message[] => {
+    const question: UserMessage = {
+      id: createId(),
+      role: 'user',
+      content: turn.question,
+      files: [],
+      createdAt: now,
+    }
+    const reply: AssistantMessage = {
+      id: createId(),
+      role: 'assistant',
+      createdAt: now,
+      model: MODEL,
+      thinking: false,
+      search: false,
+      prefix: true,
+      status: turn.status === 'stopped' ? 'stopped' : 'done',
+      stopReason: turn.status === 'done' ? 'end_turn' : undefined,
+      blocks: [{ type: 'text', text: turn.answer, citations: [] }],
+    }
+    return [question, reply]
+  })
+  updateSession(sessionId, (session) => ({
+    ...appendBranch(session, getVisibleMessages(session).at(-1)?.id ?? null, messages),
+    updatedAt: now,
+  }))
+  persist(sessionId)
+  return true
 }
 
 type Request = { history: Message[]; question: UserMessage; prefix?: AssistantMessage }
