@@ -36,6 +36,10 @@ The output is written to `dist/`. Deploy it to a static web server or open `dist
 - Markdown, syntax highlighting, KaTeX math, and Mermaid diagrams.
 - Simplified Chinese and English, light and dark themes, mobile layouts, location settings, and chat history import and export.
 
+### Live voice demo
+
+![Live voice call demo](docs/images/live-voice.gif)
+
 ## Data and storage
 
 Your API key and settings are stored in the browser's localStorage. Conversations and original attachments are stored in IndexedDB. Local data is isolated by browser profile and site origin. Sending messages, uploading attachments, and using speech features sends the relevant content to the configured API service.
